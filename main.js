@@ -3923,11 +3923,9 @@
         log("index", i);
         if (i.length > 0) {
           log("file there");
-          if (workspace === 0) {
-            delete localStorage.last_opened_workspace;
-          }
           c_file = i[workspace];
           Nimbus.realtime.c_file = c_file;
+          localStorage.last_opened_workspace = c_file.id;
           return gapi.drive.realtime.load(c_file.id, Nimbus.realtime.onFileLoaded, Nimbus.realtime.initializeModel, Nimbus.realtime.handleErrors);
         } else {
           log("file not there");
@@ -3935,6 +3933,7 @@
             log("finished insertFile", data);
             Nimbus.realtime.c_file = data;
             Nimbus.realtime.app_files.push(data);
+            localStorage.last_opened_workspace = data.id;
             return gapi.drive.realtime.load(data.id, Nimbus.realtime.onFileLoaded, Nimbus.realtime.initializeModel, Nimbus.realtime.handleErrors);
           });
           return log("need to create file for app");
@@ -23328,21 +23327,7 @@ for(var p=1;g>p;p++){i=b("sha1",e),i.update(k),k=i.digest();for(var q=0;j>q;q++)
       },
       switch_callback: null,
       all_doc: function() {
-        var file, files, folders, _i, _len, _ref;
-        files = [];
-        folders = [];
-        _ref = Nimbus.realtime.app_files;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          file = _ref[_i];
-          if (file.mimeType && file.mimeType === 'application/vnd.google-apps.drive-sdk.' + Nimbus.Auth.app_id) {
-            files.push(file);
-          } else {
-            folders.push(file);
-          }
-        }
-        this._app_files = files;
-        this._app_folders = folders;
-        return this._app_files;
+        return Nimbus.realtime.app_files;
       },
       open: function(doc, callback) {
         localStorage['last_opened_workspace'] = doc.id;
