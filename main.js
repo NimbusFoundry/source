@@ -4377,7 +4377,7 @@
           }
         }
       }
-      return (typeof gapi !== "undefined" && gapi !== null) && (gapi.auth != null) && gapi.auth.getToken() !== null && Object.keys(gapi.auth.getToken()).length !== 0 && (Nimbus.realtime.todo != null);
+      return (typeof gapi !== "undefined" && gapi !== null) && (gapi.auth != null) && gapi.auth.getToken() !== null && Object.keys(gapi.auth.getToken()).length !== 0;
     },
     authorize: function(client_id, scopes, callback) {
       log("authorized called");
@@ -5522,6 +5522,7 @@
       }
     },
     initialize_gdrive: function() {
+      var redirect_call;
       log("This part should reflect what initialization needs to be done for GDrive auth");
       Nimbus.gdrive_initialized = true;
       if (Nimbus.loaded) {
@@ -5529,6 +5530,10 @@
           return this.oauth2_authorize_second_half();
         } else {
           if (Nimbus.Client.GDrive.is_auth_redirected()) {
+            redirect_call = true;
+            if (Nimbus.Auth.authorized_callback) {
+              Nimbus.Auth.authorized_callback();
+            }
             Nimbus.Client.GDrive.handle_auth_redirected();
           }
           console.log("GDrive loaded");
@@ -5550,6 +5555,9 @@
               log("client load handled GDrive");
               log(data);
               if (data !== null && !data.error) {
+                if (Nimbus.Auth.authorized_callback && !redirect_call) {
+                  Nimbus.Auth.authorized_callback();
+                }
                 return _this.prepare_gdrive();
               }
             };
@@ -22246,10 +22254,6 @@ for(var p=1;g>p;p++){i=b("sha1",e),i.update(k),k=i.digest();for(var q=0;j>q;q++)
     return dict;
   };
 
-  if (Nimbus.Client.GDrive.is_auth_redirected()) {
-    $("#login_buttons").addClass("redirect");
-  }
-
   core.current_user = function(callback) {
     var self;
     self = this;
@@ -22467,9 +22471,6 @@ for(var p=1;g>p;p++){i=b("sha1",e),i.update(k),k=i.digest();for(var q=0;j>q;q++)
     var self;
     self = this;
     return Nimbus.Auth.set_app_ready(function() {
-      if (Nimbus.Auth.authorized()) {
-        $('#login_buttons .simple_spinner').show();
-      }
       callback();
       return self.loaded = true;
     });
